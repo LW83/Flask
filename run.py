@@ -1,10 +1,11 @@
 import os
 import json
-from flask import Flask, render_template # importing Flask class and render template function from Flask
-
+from flask import Flask, render_template, flash # importing Flask class and render template function from Flask
+if os.path.exists("env.py"):
+    import env
 
 app = Flask(__name__) # creating an instance of the class and storing in app variable. First argument of Flask class is the name of the apps module - our package.  Flask needs to know where to look for templates and static files. 
-
+app.secret_key = os.environ.get("SECRET_KEY")
 
 @app.route("/") # app route decorator - starts with @ - way of wrapping functions.
 def index(): #root decorator binds index function to itself so whenever that root is called, the function is called.
@@ -18,8 +19,8 @@ def about():
         data = json.load(json_data)
     return render_template("about.html", page_title="About", list_of_numbers=[1, 2, 3], company=data)
 
-@app.route("/about/<member_name>")
-def about_member(member_name):
+@app.route("/about/<member_name>") # angle brackets pass in the member url data
+def about_member(member_name): 
     member = {}
     with open("data/company.json", "r") as json_data:
         data = json.load(json_data)
@@ -30,6 +31,9 @@ def about_member(member_name):
     
 @app.route("/contact")
 def contact():
+    if request.method == "POST":
+        flash("Thanks {}, we have received your message!".format(
+            request.form.get("name")))
     return render_template("contact.html", page_title="Contact")
 
 
